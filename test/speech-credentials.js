@@ -717,6 +717,28 @@ test('speech credentials tests', async(t) => {
     t.ok(result.statusCode === 204, 'successfully deleted speech credential for rimelabs');
 
 
+    result = await request.post(`/Accounts/${account_sid}/SpeechCredentials`, {
+      resolveWithFullResponse: true,
+      auth: authUser,
+      json: true,
+      body: {
+        vendor: 'inworld',
+        use_for_stt: false,
+        use_for_tts: true,
+        api_key: 'asdasdasdasddsadasda',
+        model_id: 'inworld-tts-1',
+      }
+    });
+    t.ok(result.statusCode === 201, 'successfully added speech credential for inworld');
+    const inworld_sid = result.body.sid;
+
+    /* delete the credential */
+    result = await request.delete(`/Accounts/${account_sid}/SpeechCredentials/${inworld_sid}`, {
+      auth: authUser,
+      resolveWithFullResponse: true,
+    });
+    t.ok(result.statusCode === 204, 'successfully deleted speech credential for inworld');
+
     /* add a credential for custom voices google */
     result = await request.post(`/Accounts/${account_sid}/SpeechCredentials`, {
       resolveWithFullResponse: true,
@@ -769,7 +791,8 @@ test('speech credentials tests', async(t) => {
       body: {
         vendor: 'assemblyai',
         use_for_stt: true,
-        api_key: "APIKEY"
+        api_key: "APIKEY",
+        service_version: 'v2'
       }
     });
     t.ok(result.statusCode === 201, 'successfully added speech credential for assemblyai');
@@ -878,6 +901,50 @@ test('speech credentials tests', async(t) => {
       resolveWithFullResponse: true,
     });
     t.ok(result.statusCode === 204, 'successfully deleted speech credential');
+
+    /* add a credential for resemble */
+    result = await request.post(`/Accounts/${account_sid}/SpeechCredentials`, {
+      resolveWithFullResponse: true,
+      auth: authUser,
+      json: true,
+      body: {
+        vendor: 'resemble',
+        use_for_tts: true,
+        use_for_stt: false,
+        api_key: 'api_key',
+      }
+    });
+    t.ok(result.statusCode === 201, 'successfully added speech credential for Resemble');
+    const resembleSid = result.body.sid;
+
+    /* delete the credential */
+    result = await request.delete(`/Accounts/${account_sid}/SpeechCredentials/${resembleSid}`, {
+      auth: authUser,
+      resolveWithFullResponse: true,
+    });
+    t.ok(result.statusCode === 204, 'successfully deleted speech credential for Resemble');
+
+    /* add a credential for deepgram river */
+    result = await request.post(`/Accounts/${account_sid}/SpeechCredentials`, {
+      resolveWithFullResponse: true,
+      auth: authUser,
+      json: true,
+      body: {
+        vendor: 'deepgramriver',
+        use_for_tts: false,
+        use_for_stt: true,
+        api_key: 'api_key',
+      }
+    });
+    t.ok(result.statusCode === 201, 'successfully added speech credential for Verbio');
+    const deepgramriverSid = result.body.sid;
+
+    /* delete the credential */
+    result = await request.delete(`/Accounts/${account_sid}/SpeechCredentials/${deepgramriverSid}`, {
+      auth: authUser,
+      resolveWithFullResponse: true,
+    });
+    t.ok(result.statusCode === 204, 'successfully deleted speech credential deepgramriver');
 
     /* Check google supportedLanguagesAndVoices */
     result = await request.get(`/Accounts/${account_sid}/SpeechCredentials/speech/supportedLanguagesAndVoices?vendor=google`, {
