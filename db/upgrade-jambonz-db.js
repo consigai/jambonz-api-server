@@ -228,6 +228,13 @@ const sql = {
   ],
   9004: [
     'ALTER TABLE applications ADD COLUMN env_vars TEXT',
+  ],
+  9005: [
+    'UPDATE applications SET speech_synthesis_voice = \'en-US-Standard-C\' WHERE speech_synthesis_voice IS NULL AND speech_synthesis_vendor = \'google\' AND speech_synthesis_language = \'en-US\'',
+    'ALTER TABLE applications MODIFY COLUMN speech_synthesis_voice VARCHAR(255) DEFAULT \'en-US-Standard-C\'',
+    'ALTER TABLE voip_carriers ADD COLUMN trunk_type ENUM(\'static_ip\',\'auth\',\'reg\') NOT NULL DEFAULT \'static_ip\'',
+    'ALTER TABLE predefined_carriers ADD COLUMN trunk_type ENUM(\'static_ip\',\'auth\',\'reg\') NOT NULL DEFAULT \'static_ip\'',
+    'CREATE INDEX idx_sip_gateways_inbound_carrier ON sip_gateways (inbound,voip_carrier_sid)',
   ]
 };
 
@@ -263,6 +270,8 @@ const doIt = async() => {
         if (val < 9000) upgrades.push(...sql['9000']);
         if (val < 9002) upgrades.push(...sql['9002']);
         if (val < 9003) upgrades.push(...sql['9003']);
+        if (val < 9004) upgrades.push(...sql['9004']);
+        if (val < 9005) upgrades.push(...sql['9005']);
 
         // perform all upgrades
         logger.info({upgrades}, 'applying schema upgrades..');

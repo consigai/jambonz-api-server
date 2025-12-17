@@ -656,7 +656,8 @@ test('speech credentials tests', async(t) => {
         use_for_stt: true,
         use_for_tts: false,
         api_key: 'asdasdasdasddsadasda',
-        model_id: 'eleven_multilingual_v2'
+        model_id: 'eleven_multilingual_v2',
+        api_uri: 'api.elevenlabs.io'
       }
     });
     t.ok(result.statusCode === 201, 'successfully added speech credential for elevenlabs');
@@ -717,6 +718,28 @@ test('speech credentials tests', async(t) => {
     t.ok(result.statusCode === 204, 'successfully deleted speech credential for rimelabs');
 
 
+    result = await request.post(`/Accounts/${account_sid}/SpeechCredentials`, {
+      resolveWithFullResponse: true,
+      auth: authUser,
+      json: true,
+      body: {
+        vendor: 'inworld',
+        use_for_stt: false,
+        use_for_tts: true,
+        api_key: 'asdasdasdasddsadasda',
+        model_id: 'inworld-tts-1',
+      }
+    });
+    t.ok(result.statusCode === 201, 'successfully added speech credential for inworld');
+    const inworld_sid = result.body.sid;
+
+    /* delete the credential */
+    result = await request.delete(`/Accounts/${account_sid}/SpeechCredentials/${inworld_sid}`, {
+      auth: authUser,
+      resolveWithFullResponse: true,
+    });
+    t.ok(result.statusCode === 204, 'successfully deleted speech credential for inworld');
+
     /* add a credential for custom voices google */
     result = await request.post(`/Accounts/${account_sid}/SpeechCredentials`, {
       resolveWithFullResponse: true,
@@ -769,7 +792,8 @@ test('speech credentials tests', async(t) => {
       body: {
         vendor: 'assemblyai',
         use_for_stt: true,
-        api_key: "APIKEY"
+        api_key: "APIKEY",
+        service_version: 'v2'
       }
     });
     t.ok(result.statusCode === 201, 'successfully added speech credential for assemblyai');
@@ -777,6 +801,29 @@ test('speech credentials tests', async(t) => {
 
     /* delete the credential */
     result = await request.delete(`/Accounts/${account_sid}/SpeechCredentials/${assemblyAiSid}`, {
+      auth: authUser,
+      resolveWithFullResponse: true,
+    });
+    t.ok(result.statusCode === 204, 'successfully deleted speech credential');
+
+    /* add a credential for houndify */
+    result = await request.post(`/Accounts/${account_sid}/SpeechCredentials`, {
+      resolveWithFullResponse: true,
+      auth: authUser,
+      json: true,
+      body: {
+        vendor: 'houndify',
+        use_for_stt: true,
+        client_key: "ClientKey",
+        client_id: "ClientID",
+        user_id: "test_user"
+      }
+    });
+    t.ok(result.statusCode === 201, 'successfully added speech credential for houndify');
+    const houndifySid = result.body.sid;
+
+    /* delete the credential */
+    result = await request.delete(`/Accounts/${account_sid}/SpeechCredentials/${houndifySid}`, {
       auth: authUser,
       resolveWithFullResponse: true,
     });
@@ -878,6 +925,72 @@ test('speech credentials tests', async(t) => {
       resolveWithFullResponse: true,
     });
     t.ok(result.statusCode === 204, 'successfully deleted speech credential');
+
+    /* add a credential for resemble */
+    result = await request.post(`/Accounts/${account_sid}/SpeechCredentials`, {
+      resolveWithFullResponse: true,
+      auth: authUser,
+      json: true,
+      body: {
+        vendor: 'resemble',
+        use_for_tts: true,
+        use_for_stt: false,
+        api_key: 'api_key',
+      }
+    });
+    t.ok(result.statusCode === 201, 'successfully added speech credential for Resemble');
+    const resembleSid = result.body.sid;
+
+    /* delete the credential */
+    result = await request.delete(`/Accounts/${account_sid}/SpeechCredentials/${resembleSid}`, {
+      auth: authUser,
+      resolveWithFullResponse: true,
+    });
+    t.ok(result.statusCode === 204, 'successfully deleted speech credential for Resemble');
+
+    /* add a credential for deepgram river */
+    result = await request.post(`/Accounts/${account_sid}/SpeechCredentials`, {
+      resolveWithFullResponse: true,
+      auth: authUser,
+      json: true,
+      body: {
+        vendor: 'deepgramflux',
+        use_for_tts: false,
+        use_for_stt: true,
+        api_key: 'api_key',
+      }
+    });
+    t.ok(result.statusCode === 201, 'successfully added speech credential for Verbio');
+    const deepgramfluxSid = result.body.sid;
+
+    /* delete the credential */
+    result = await request.delete(`/Accounts/${account_sid}/SpeechCredentials/${deepgramfluxSid}`, {
+      auth: authUser,
+      resolveWithFullResponse: true,
+    });
+    t.ok(result.statusCode === 204, 'successfully deleted speech credential deepgramflux');
+
+    /* add a credential for gladia */
+    result = await request.post(`/Accounts/${account_sid}/SpeechCredentials`, {
+      resolveWithFullResponse: true,
+      auth: authUser,
+      json: true,
+      body: {
+        vendor: 'gladia',
+        use_for_tts: false,
+        use_for_stt: true,
+        api_key: 'api_key',
+      }
+    });
+    t.ok(result.statusCode === 201, 'successfully added speech credential for Gladia');
+    const gladiaSid = result.body.sid;
+
+    /* delete the credential */
+    result = await request.delete(`/Accounts/${account_sid}/SpeechCredentials/${gladiaSid}`, {
+      auth: authUser,
+      resolveWithFullResponse: true,
+    });
+    t.ok(result.statusCode === 204, 'successfully deleted speech credential for Gladia');
 
     /* Check google supportedLanguagesAndVoices */
     result = await request.get(`/Accounts/${account_sid}/SpeechCredentials/speech/supportedLanguagesAndVoices?vendor=google`, {
@@ -1013,6 +1126,15 @@ test('speech credentials tests', async(t) => {
     });
     t.ok(result.body.tts.length !== 0, 'successfully get whisper supported languages and voices');
     t.ok(result.body.models.length !== 0, 'successfully get whisper supported languages and voices');
+
+    /* Check gladia supportedLanguagesAndVoices */
+    result = await request.get(`/Accounts/${account_sid}/SpeechCredentials/speech/supportedLanguagesAndVoices?vendor=gladia`, {
+      resolveWithFullResponse: true,
+      simple: false,
+      auth: authAdmin,
+      json: true,
+    });
+    t.ok(result.body.stt.length !== 0, 'successfully get gladia supported languages and voices');
 
     await deleteObjectBySid(request, '/Accounts', account_sid);
     await deleteObjectBySid(request, '/ServiceProviders', service_provider_sid);
