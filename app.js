@@ -218,6 +218,11 @@ app.use((err, req, res, next) => {
 });
 logger.info(`listening for HTTP traffic on port ${PORT}`);
 const server = app.listen(PORT);
+/* Behind an AWS ALB (idle timeout 60s), Node's default keep-alive (5s + 1s buffer) closes idle
+   sockets first, and a request racing that close gets an ALB-generated 502. Keep sockets open
+   longer than the ALB so it always closes first. See consigai/outbound#1115. */
+server.keepAliveTimeout = parseInt(process.env.HTTP_KEEP_ALIVE_TIMEOUT_MS, 10) || 65000;
+server.headersTimeout = server.keepAliveTimeout + 1000;
 
 
 const isValidWsKey = (hdr) => {
