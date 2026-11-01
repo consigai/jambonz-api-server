@@ -9,7 +9,14 @@ const cors = require('cors');
 const passport = require('passport');
 const {verifyViewOnlyUser} = require('./lib/middleware');
 const routes = require('./lib/routes');
-const Registrar = require('@jambonz/mw-registrar');
+const Registrar = require('./lib/utils/registrar');
+const {followFailover} = require('./lib/utils/redis-failover');
+
+/* consigai/consig-cdk-jam#155: defense in depth only, as in the SBCs (consigai/outbound#795).
+ An unhandled READONLY rejection exited this process on Oct 31. Fix the source too. */
+process.on('unhandledRejection', (reason) => {
+  logger.error({err: reason}, 'unhandledRejection: logged and ignored, process kept alive');
+});
 
 assert.ok(process.env.JAMBONES_MYSQL_HOST &&
   process.env.JAMBONES_MYSQL_USER &&
@@ -52,6 +59,7 @@ const {
   getCallCount
 } = require('./lib/helpers/realtimedb-helpers');
 const {
+  client: speechClient,
   getTtsVoices,
   getTtsSize,
   purgeTtsCache,
@@ -59,6 +67,8 @@ const {
   getVerbioAccessToken,
   synthAudio
 } = require('@jambonz/speech-utils')({}, logger);
+/* speech-utils makes its own connection for the TTS cache */
+followFailover(speechClient, logger);
 const {
   lookupAppBySid,
   lookupAccountBySid,
